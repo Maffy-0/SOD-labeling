@@ -6,6 +6,7 @@ from PIL import ImageDraw, Image
 import json
 import cv2
 import os
+import sys
 
 def shape_to_mask(
     img_shape, points, shape_type=None, line_width=10, point_size=5
@@ -38,14 +39,21 @@ def shape_to_mask(
     mask = np.array(mask, dtype=bool)
     return mask
 
-dest_dir = '../labeled_pics/'
 
 def main():
-    json_path = 'label.json'
-    with open(json_path, "r",encoding="utf-8") as f:
-        dj = json.load(f)
-        # dj['shapes'][0]は今回一つのラベルのため。
-        mask = shape_to_mask((dj['imageHeight'],dj['imageWidth']), dj['shapes'][0]['points'], shape_type=None,line_width=1, point_size=1)
-        mask_img = mask.astype(np.int)#booleanを0,1に変換
-        dest = os.path.join(dest_dir, os.path.splitext(os.path.basename(json_path))[0]+".jpg")
-        cv2.imwrite(dest,mask_img*255)
+    json_dir = '../labeled_json'
+    dest_dir = '../labeled_pics'
+    json_file_list = sorted([f for f in os.listdir(json_dir)])
+    print(json_file_list)
+    exit()
+    for json_file_path in json_file_list:
+        json_path = os.path.join(json_dir, json_file_path)
+        with open(json_path, "r",encoding="utf-8") as f:
+            dj = json.load(f)
+            # dj['shapes'][0]は今回一つのラベルのため。
+            mask = shape_to_mask((dj['imageHeight'],dj['imageWidth']), dj['shapes'][0]['points'], shape_type=None,line_width=1, point_size=1)
+            mask_img = mask.astype(np.int)#booleanを0,1に変換
+            dest = os.path.join(dest_dir, os.path.splitext(os.path.basename(json_path))[0]+".jpg")
+            cv2.imwrite(dest,mask_img*255)
+
+main()
